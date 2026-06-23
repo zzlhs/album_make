@@ -1,0 +1,61 @@
+{
+  "id": "watercolor",
+  "name": "水彩手账风",
+  "style": "watercolor",
+  "version": "1.0.0",
+  "baseUrl": "https://cdn.example.com/album-templates/watercolor/",
+  "fonts": [
+    {
+      "id": "handwriting",
+      "family": "AlbumHandwriting",
+      "src": "fonts/handwriting.woff2",
+      "weight": 400
+    }
+  ],
+  "coverTemplates": [
+    {
+      "id": "watercolor-cover-01",
+      "name": "水彩回忆封面",
+      "style": "watercolor",
+      "type": "cover",
+      "photoCount": 1,
+      "pageWidth": 1055,
+      "pageHeight": 1491,
+      "background": "cover-bg.png",
+      "overlay": "cover-overlay.png",
+      "frames": [
+        {
+          "id": "cover-photo",
+          "x": 220,
+          "y": 430,
+          "width": 620,
+          "height": 520,
+          "rotation": -2,
+          "radius": 18,
+          "fit": "cover",
+          "objectPositionX": 50,
+          "objectPositionY": 50
+        }
+      ],
+      "textAreas": [
+        {
+          "id": "title",
+          "type": "title",
+          "x": 120,
+          "y": 120,
+          "width": 820,
+          "height": 120,
+          "fontSize": 72,
+          "fontFamily": "serif",
+          "fontWeight": 700,
+          "color": "#c9647c",
+          "align": "center",
+          "lineHeight": 1.25
+        }
+      ]
+    }
+  ],
+  "tocTemplates": [],
+  "contentTemplates": [],
+  "endingTemplates": []
+}
