@@ -1,58 +1,97 @@
-# 相册书导出 Web 应用 MVP
+# Album Book Web
 
-基于《相册书导出 Web 应用第一版开发文档》实现的纯前端 MVP。项目不包含后端，不上传用户照片，照片使用 `URL.createObjectURL(file)` 在浏览器本地预览、排版和导出。
+Album Book Web is a browser-only editor for turning local photos into a printable album book. It generates a cover, table of contents, photo pages, and an ending page, then exports the result as PDF or fixed-layout EPUB.
 
-## 已实现能力
+The app has no backend requirement. Photos stay in the browser and are previewed with local object URLs, so the editing and export flow can run entirely on the user's machine.
 
-- 相册尺寸选择：A4 竖版、A5 竖版、方形、16:9 横版、3:4 竖版、自定义 px。
-- 模板风格选择：水彩手账风、旅行相册风、亲子成长风、纪念册风、极简留白风。
-- 多图上传：支持 JPG / PNG / WEBP，支持拖拽上传、缩略图预览、删除和顺序调整。
-- 自动分页：按 1 / 2 / 4 / 6 图容量自动分页，包含封面、目录、正文页、结束页。
-- 手动分配照片：可在照片列表中把任意照片分配到指定正文页，也可在当前页设置里快速加入/移除照片，每页最多 6 张。
-- 自动匹配模板：每页按照片数量选择 1 / 2 / 4 / 6 图模板，3 张会使用 4 图模板，5 张会使用 6 图模板并保留空框。
-- 页面编辑：整本标题、副标题、作者、日期、描述；单页标题、日期、备注。
-- 本地文案：旅行、成长、纪念、家庭等本地规则文案，不接 AI，不暴露 API Key。
-- 照片手动调整：在预览页拖动照片调整位置；按住 Ctrl/⌘ 或 Alt 并滚轮缩放，也可使用照片上的 +/-/重置控件。
-- 操作体验优化：自定义滚动条、滚动区域阻尼优化、避免普通滚动误触照片缩放。
-- Dark / Light 模式：工具栏按钮切换，带从按钮位置扩散到全屏的动态效果。
-- 中英切换：工具栏支持中文 / English UI 切换。
-- PDF 导出：逐页 Canvas 渲染后用 jsPDF 生成 PDF。
-- 固定版式 EPUB 导出：逐页渲染成整页 JPEG，JSZip 打包为 EPUB3 固定版式。
+## What It Does
 
-## 技术栈
+- Builds album pages automatically from uploaded JPG, PNG, or WEBP photos.
+- Supports A4 portrait, A5 portrait, square, 16:9 landscape, 3:4 portrait, and custom pixel sizes.
+- Includes built-in visual styles such as watercolor journal, travel album, kids growth, memory book, and minimal layouts.
+- Creates cover, table of contents, content pages, and ending pages with 1 / 2 / 4 / 6 photo layouts.
+- Lets users manually assign photos to content pages and remove them from the current page.
+- Lets users edit album metadata, page titles, dates, notes, cover title, and ending title.
+- Lets users move, resize, rotate, and reset photo frames directly on the preview canvas.
+- Provides local rule-based copywriting for travel, growth, memory, and family notes without calling an AI service.
+- Supports light and dark themes, plus Chinese and English UI text.
+- Exports each page through Canvas into PDF with jsPDF.
+- Exports fixed-layout EPUB by rendering pages as full-page images and packaging them with JSZip.
 
-- React 18 + Vite 5 + TypeScript
+## Local-First By Design
+
+Album Book Web is designed for private photo workflows:
+
+- Uploaded photos are not sent to a server by the app.
+- Photo previews use `URL.createObjectURL(file)`.
+- PDF and EPUB generation happens in the browser.
+- Refreshing the page clears the current in-memory editing session unless project persistence is added later.
+
+## Tech Stack
+
+- React 18
+- Vite 5
+- TypeScript
 - Zustand
+- Canvas API
 - jsPDF
 - JSZip
-- Canvas API
-- nanoid / clsx
+- nanoid
+- clsx
 
-当前依赖锁定为 Node 18 兼容版本，避免 Vite latest 版本要求 Node 20+ 的问题。
+The dependency set is pinned for Node.js 18 compatibility. The recommended runtime is Node.js `>=18.18.0`.
 
-## 启动方式
+## Getting Started
+
+Install dependencies:
 
 ```bash
 npm install
+```
+
+Start the development server:
+
+```bash
 npm run dev
 ```
 
-如需启用 ImageKit / CDN 模板，复制 `.env.example` 为 `.env`，把 `VITE_TEMPLATE_CDN_URLS` 改成一个或多个 `template.json` 地址：
+Create a production build:
+
+```bash
+npm run build
+```
+
+Preview the production build:
+
+```bash
+npm run preview
+```
+
+## CDN Templates
+
+The app works without external templates by using built-in programmatic layouts. It can also load template packages from a CDN.
+
+To enable CDN templates, copy `.env.example` to `.env` and set `VITE_TEMPLATE_CDN_URLS` to one or more `template.json` URLs:
 
 ```bash
 VITE_TEMPLATE_CDN_URLS=https://ik.imagekit.io/YOUR_IMAGEKIT_ID/album-templates/watercolor/v1/template.json
 ```
 
-多个模板包可用英文逗号、分号或换行分隔。未配置时应用继续使用内置程序化模板。
+Multiple template URLs may be separated by commas, semicolons, or new lines.
 
-生产构建：
+CDN-hosted assets used in Canvas export must be served with CORS enabled:
 
-```bash
-npm run build
-npm run preview
+```http
+Access-Control-Allow-Origin: *
 ```
 
-## 项目结构
+Template package details are documented in:
+
+```text
+docs/CDN_TEMPLATE_GUIDE.md
+```
+
+## Project Layout
 
 ```text
 src/
@@ -76,55 +115,35 @@ src/
 │   └── uiStore.ts
 ├── templates/
 │   ├── templateTypes.ts
-│   └── templateRegistry.ts
+│   ├── templateRegistry.ts
+│   └── cdnTemplateLoader.ts
 ├── utils/
 │   ├── image.ts
 │   ├── pagination.ts
 │   ├── canvasRenderer.ts
 │   ├── pdfExporter.ts
 │   ├── epubExporter.ts
+│   ├── frameState.ts
 │   └── copywriting.ts
 └── styles/
     └── globals.css
-
-docs/
-└── CDN_TEMPLATE_GUIDE.md
 
 public/templates/watercolor/
 └── template.example.json
 ```
 
-## CDN 模板文档
+## Notes For Contributors
 
-CDN 图库、背景图、overlay、模板 JSON 字段说明见：
+- The template JSON defines default frame positions, sizes, rotations, and text areas.
+- User edits to frames are stored as page-level runtime state and override the template defaults in preview, thumbnails, PDF export, and EPUB export.
+- Background images, overlays, fonts, and template assets loaded from a CDN need correct CORS headers, otherwise Canvas export can fail.
+- Regenerating the layout currently rebuilds pages from the photo list and may replace manual page or frame adjustments.
+- Fixed-layout EPUB output is reader-dependent. PDF is the primary export target.
 
-```text
-docs/CDN_TEMPLATE_GUIDE.md
-```
+## License
 
-其中包含：
+This project is licensed under the GNU Affero General Public License v3.0 or later.
 
-- 推荐 CDN 目录结构。
-- CDN CORS 配置。
-- background / photos / overlay / texts 渲染层级。
-- `template.json` 顶层字段。
-- `frames` 照片框字段。
-- `textAreas` 文本区域字段。
-- 完整示例 JSON。
-- 前端加载 CDN 模板的建议代码。
+SPDX-License-Identifier: `AGPL-3.0-or-later`
 
-## 关键说明
-
-1. 第一版模板为内置程序化模板，无需 CDN，因此不存在 Canvas 跨域污染问题。后续接入 CDN 模板时，CDN 必须配置 `Access-Control-Allow-Origin: *`，前端加载图片需设置 `img.crossOrigin = "anonymous"`。
-2. A4 / A5 等毫米尺寸导出时按 DPI 转换为像素。默认 150DPI，避免多页高清图导出时占用过多浏览器内存。
-3. EPUB 为固定版式 EPUB，兼容性依赖阅读器。第一版主推 PDF，EPUB 作为附加导出能力。
-4. 项目默认不做本地自动保存，刷新页面后当前上传照片和编辑状态会丢失。
-5. 点击“重新生成排版”会重新按照片顺序自动分页，手动分配结果会被自动排版覆盖。
-
-## 后续可扩展方向
-
-- IndexedDB 本地项目保存。
-- 将模板改为 `/public/templates` 或 CDN JSON + PNG/SVG 资源。
-- 增加页面排序和章节管理。
-- 增加移动端深度适配。
-- 通过后端代理接入 AI 文案、封面或背景生成，避免前端暴露 API Key。
+See [LICENSE](LICENSE) for the full license text.

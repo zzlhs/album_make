@@ -24,6 +24,9 @@ export function AlbumEditor() {
   }
 
   const template = getTemplateById(page.templateId, renderSize.width, renderSize.height);
+  const pageTitle = page.type === 'cover'
+    ? meta.title || t('coverFallbackTitle')
+    : page.title || (page.type === 'toc' ? t('tocTitle') : page.type === 'ending' ? t('endingTitle') : template.name);
 
   return (
     <main className="editor-layout">
@@ -31,7 +34,7 @@ export function AlbumEditor() {
       <section className="preview-area smooth-scroll glass-panel">
         <div className="preview-toolbar">
           <div>
-            <strong>{page.title || template.name}</strong>
+            <strong>{pageTitle}</strong>
             <span>{template.name}</span>
           </div>
           <span className="preview-tip">{t('previewTip')}</span>

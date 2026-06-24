@@ -112,6 +112,22 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 .icon-toggle span { width: 22px; height: 22px; border-radius: 999px; display: grid; place-items: center; background: var(--secondary); color: var(--text); font-size: 13px; }
 .icon-toggle em { font-style: normal; font-size: 12px; color: var(--muted); }
 
+.github-corner {
+  position: fixed;
+  right: 0;
+  top: 0;
+  z-index: 40;
+  width: 80px;
+  height: 80px;
+  color: var(--primary-contrast);
+  filter: drop-shadow(0 10px 20px rgba(62, 50, 35, 0.16));
+  transition: transform .18s ease, filter .18s ease;
+}
+.github-corner:hover { transform: translateY(-1px); filter: drop-shadow(0 14px 26px rgba(62, 50, 35, 0.22)); }
+.github-corner svg { display: block; width: 100%; height: 100%; fill: var(--primary); }
+.github-corner-mark { fill: var(--primary-contrast); transform: translate(22px, -3px) scale(0.84); transform-origin: 56px 22px; transition: transform .18s ease; }
+.github-corner:hover .github-corner-mark { transform: translate(22px, -3px) scale(0.9) rotate(8deg); }
+
 .app-grid { display: grid; grid-template-columns: var(--left-panel-width) minmax(0, 1fr); gap: var(--shell-gap); margin-top: var(--shell-gap); align-items: start; }
 .setup-panel { padding: 16px; display: flex; flex-direction: column; gap: 14px; position: sticky; top: var(--sticky-top); max-height: calc(100vh - 112px); overflow: auto; }
 .panel-section { padding: 16px; border-radius: 20px; background: var(--panel-solid); border: 1px solid var(--border); transition: background 0.28s ease, border-color 0.28s ease; }
@@ -284,11 +300,29 @@ input:focus, textarea:focus, select:focus { border-color: var(--primary); box-sh
   z-index: 1;
 }
 .photo-frame:active { cursor: grabbing; }
-.photo-frame img { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; transition: transform 0.06s linear; }
+.photo-frame img { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
 .photo-frame.empty { display: grid; place-items: center; color: #9c8c7a; background: rgba(255,255,255,.5); border-style: dashed; cursor: default; }
+.photo-frame.selected { outline: 2px solid var(--primary); outline-offset: -2px; z-index: 5; }
 .frame-controls { position: absolute; right: 10px; bottom: 10px; display: inline-flex; gap: 4px; padding: 4px; border-radius: 999px; background: rgba(25, 19, 15, .52); backdrop-filter: blur(10px); opacity: 0; transform: translateY(4px); transition: opacity .18s ease, transform .18s ease; z-index: 4; }
-.photo-frame:hover .frame-controls, .photo-frame:focus-within .frame-controls { opacity: 1; transform: translateY(0); }
+.photo-frame:hover .frame-controls, .photo-frame.selected .frame-controls { opacity: 1; transform: translateY(0); }
 .frame-controls button { width: 28px; height: 28px; border: 0; border-radius: 999px; background: rgba(255,255,255,.92); color: #241e19; display: grid; place-items: center; font-weight: 800; }
+.frame-resize-handle {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 22px;
+  height: 22px;
+  z-index: 6;
+  cursor: nwse-resize;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding: 3px;
+  color: rgba(255,255,255,.85);
+  opacity: 0;
+  transition: opacity .18s ease;
+}
+.photo-frame:hover .frame-resize-handle, .photo-frame.selected .frame-resize-handle { opacity: 1; }
 .decorative-overlay { position: absolute; inset: 0; pointer-events: none; z-index: 2; }
 .template-overlay-image { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; pointer-events: none; z-index: 2; }
 .star { position: absolute; font-size: 46px; opacity: 0.5; }

@@ -58,7 +58,7 @@ export function AlbumPagePreview({ page, template, meta, pages }: { page: AlbumP
         {!hasImageBackground && <div className="surface-blob one" style={{ backgroundColor: template.background.accentSoft }} />}
         {!hasImageBackground && <div className="surface-blob two" style={{ backgroundColor: template.background.accent }} />}
         {template.frames.map((frame, index) => (
-          <PhotoFrame key={frame.id} page={page} frame={frame} photo={page.photos[index]} previewScale={previewScale} />
+          <PhotoFrame key={frame.id} page={page} frame={frame} photo={page.photos[index]} previewScale={previewScale} pageWidth={template.pageWidth} pageHeight={template.pageHeight} />
         ))}
         {typeof template.overlay === 'string' && <img className="template-overlay-image" src={template.overlay} crossOrigin="anonymous" alt="" aria-hidden />}
         {template.overlay === true && <DecorativeOverlay template={template} />}
@@ -77,8 +77,8 @@ function t(language: Language, key: TranslationKey, params?: Record<string, stri
 function resolveText(area: TextAreaTemplate, page: AlbumPage, meta: AlbumMeta, pages: AlbumPage[], language: Language) {
   if (area.type === 'title') {
     if (page.type === 'cover') return meta.title || t(language, 'coverFallbackTitle');
-    if (page.type === 'toc') return t(language, 'tocTitle');
-    if (page.type === 'ending') return t(language, 'endingTitle');
+    if (page.type === 'toc') return page.title || t(language, 'tocTitle');
+    if (page.type === 'ending') return page.title || t(language, 'endingTitle');
     return page.title || `${t(language, 'memory')} ${page.pageNumber}`;
   }
   if (area.type === 'subtitle') return meta.subtitle || meta.description || '';

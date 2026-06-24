@@ -38,6 +38,8 @@ export type AlbumState = {
   assignPhotoToPage: (photoId: string, targetPageId: string) => void;
   removePhotoFromPage: (photoId: string, pageId: string) => void;
   addContentPage: (photoId?: string) => void;
+  selectedFrameId?: string;
+  selectFrame: (pageId: string, frameId: string) => void;
 };
 
 const supportedPhotoCounts = [1, 2, 4, 6] as const;
@@ -88,15 +90,20 @@ function createFrameStates(page: AlbumPage, width: number, height: number, theme
     const photo = page.photos[index];
     if (!photo) return;
     const previous = previousStates[frame.id];
+    const shouldReuse = previous?.photoId === photo.id;
     result[frame.id] = {
       photoId: photo.id,
       frameId: frame.id,
-      scale: previous?.photoId === photo.id ? previous.scale : 1,
-      offsetX: previous?.photoId === photo.id ? previous.offsetX : 0,
-      offsetY: previous?.photoId === photo.id ? previous.offsetY : 0,
-      rotation: frame.rotation,
-      objectPositionX: previous?.photoId === photo.id ? previous.objectPositionX : 50,
-      objectPositionY: previous?.photoId === photo.id ? previous.objectPositionY : 50,
+      scale: shouldReuse ? previous.scale : 1,
+      offsetX: shouldReuse ? previous.offsetX : 0,
+      offsetY: shouldReuse ? previous.offsetY : 0,
+      objectPositionX: shouldReuse ? previous.objectPositionX : 50,
+      objectPositionY: shouldReuse ? previous.objectPositionY : 50,
+      x: shouldReuse ? (previous.x ?? frame.x) : frame.x,
+      y: shouldReuse ? (previous.y ?? frame.y) : frame.y,
+      width: shouldReuse ? (previous.width ?? frame.width) : frame.width,
+      height: shouldReuse ? (previous.height ?? frame.height) : frame.height,
+      rotation: shouldReuse ? (previous.rotation ?? frame.rotation) : frame.rotation,
     };
   });
   return result;
@@ -206,6 +213,7 @@ export const useAlbumStore = create<AlbumState>((set, get) => ({
   photos: [],
   pages: [],
   currentPageId: undefined,
+  selectedFrameId: undefined,
   loadCdnTemplates: async (urls) => {
     if (!urls.length) return;
     set({ cdnTemplateStatus: 'loading', cdnTemplateError: undefined });
@@ -266,7 +274,8 @@ export const useAlbumStore = create<AlbumState>((set, get) => ({
   updatePage: (pageId, patch) => set((state) => ({
     pages: state.pages.map((page) => (page.id === pageId ? { ...page, ...patch } : page)),
   })),
-  setCurrentPage: (pageId) => set({ currentPageId: pageId }),
+  setCurrentPage: (pageId) => set({ currentPageId: pageId, selectedFrameId: undefined }),
+  selectFrame: (pageId, frameId) => set({ selectedFrameId: frameId }),
   updateFrameState: (pageId, frameId, patch) => set((state) => ({
     pages: state.pages.map((page) => {
       if (page.id !== pageId) return page;
@@ -281,20 +290,40 @@ export const useAlbumStore = create<AlbumState>((set, get) => ({
       };
     }),
   })),
-  resetFrameState: (pageId, frameId) => set((state) => ({
-    pages: state.pages.map((page) => {
-      if (page.id !== pageId) return page;
-      const current = page.frameStates[frameId];
-      if (!current) return page;
-      return {
-        ...page,
-        frameStates: {
-          ...page.frameStates,
-          [frameId]: { ...current, scale: 1, offsetX: 0, offsetY: 0 },
-        },
-      };
-    }),
-  })),
+  resetFrameState: (pageId, frameId) => set((state) => {
+    const page = state.pages.find((p) => p.id === pageId);
+    if (!page) return state;
+    const current = page.frameStates[frameId];
+    if (!current) return state;
+    const { width, height } = getRenderSize(state.size);
+    const template = findTemplateForPage(page, width, height, state.selectedThemeId);
+    const frame = template?.frames.find((f) => f.id === frameId);
+    if (!frame) return state;
+    return {
+      pages: state.pages.map((p) => {
+        if (p.id !== pageId) return p;
+        return {
+          ...p,
+          frameStates: {
+            ...p.frameStates,
+            [frameId]: {
+              ...current,
+              scale: 1,
+              offsetX: 0,
+              offsetY: 0,
+              objectPositionX: 50,
+              objectPositionY: 50,
+              x: frame.x,
+              y: frame.y,
+              width: frame.width,
+              height: frame.height,
+              rotation: frame.rotation,
+            },
+          },
+        };
+      }),
+    };
+  }),
   assignPhotoToPage: (photoId, targetPageId) => set((state) => {
     const photo = state.photos.find((item) => item.id === photoId);
     const target = state.pages.find((page) => page.id === targetPageId && page.type === 'content');

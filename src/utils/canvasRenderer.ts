@@ -1,6 +1,7 @@
 import type { AlbumMeta, AlbumPage, PageTemplate, PhotoFrameState, PhotoFrameTemplate, TextAreaTemplate } from '../templates/templateTypes';
 import { loadImage } from './image';
 import { generateTocItems } from './pagination';
+import { resolveFrame } from './frameState';
 
 function roundedRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r = 12) {
   const radius = Math.min(r, w / 2, h / 2);
@@ -154,42 +155,35 @@ function drawPhotoWithFrameState(
   frame: PhotoFrameTemplate,
   state?: PhotoFrameState,
 ) {
-  const scale = Math.max(0.2, state?.scale ?? 1);
-  const offsetX = state?.offsetX ?? 0;
-  const offsetY = state?.offsetY ?? 0;
-  const cx = frame.x + frame.width / 2;
-  const cy = frame.y + frame.height / 2;
+  const f = resolveFrame(frame, state);
+  const cx = f.x + f.width / 2;
+  const cy = f.y + f.height / 2;
 
   ctx.save();
   ctx.translate(cx, cy);
-  ctx.rotate(((frame.rotation || 0) * Math.PI) / 180);
+  ctx.rotate(((f.rotation || 0) * Math.PI) / 180);
   ctx.translate(-cx, -cy);
 
   ctx.shadowColor = 'rgba(42, 34, 28, 0.2)';
-  ctx.shadowBlur = Math.max(8, frame.width * 0.025);
-  ctx.shadowOffsetY = Math.max(4, frame.height * 0.018);
+  ctx.shadowBlur = Math.max(8, f.width * 0.025);
+  ctx.shadowOffsetY = Math.max(4, f.height * 0.018);
   ctx.fillStyle = '#fff';
-  roundedRect(ctx, frame.x - 8, frame.y - 8, frame.width + 16, frame.height + 16, (frame.radius ?? 14) + 4);
+  roundedRect(ctx, f.x - 8, f.y - 8, f.width + 16, f.height + 16, (f.radius ?? 14) + 4);
   ctx.fill();
 
   ctx.shadowColor = 'transparent';
-  roundedRect(ctx, frame.x, frame.y, frame.width, frame.height, frame.radius ?? 14);
+  roundedRect(ctx, f.x, f.y, f.width, f.height, f.radius ?? 14);
   ctx.clip();
 
-  const coverScale = Math.max(frame.width / img.naturalWidth, frame.height / img.naturalHeight) * scale;
-  const dw = img.naturalWidth * coverScale;
-  const dh = img.naturalHeight * coverScale;
-  const dx = frame.x + frame.width / 2 - dw / 2 + offsetX;
-  const dy = frame.y + frame.height / 2 - dh / 2 + offsetY;
-  ctx.drawImage(img, dx, dy, dw, dh);
+  drawImageCover(ctx, img, f.x, f.y, f.width, f.height, 0.5, 0.5);
   ctx.restore();
 }
 
 function resolveText(area: TextAreaTemplate, page: AlbumPage, meta: AlbumMeta, pages: AlbumPage[]) {
   if (area.type === 'title') {
     if (page.type === 'cover') return meta.title || '我的相册书';
-    if (page.type === 'toc') return '目录';
-    if (page.type === 'ending') return 'THE END';
+    if (page.type === 'toc') return page.title || '目录';
+    if (page.type === 'ending') return page.title || 'THE END';
     return page.title || `回忆 ${page.pageNumber}`;
   }
   if (area.type === 'subtitle') return meta.subtitle || meta.description || '';

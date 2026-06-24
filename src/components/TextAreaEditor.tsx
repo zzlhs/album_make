@@ -43,7 +43,13 @@ export function TextAreaEditor() {
         <section className="panel-section compact">
           <h2>{t('pageSettings')}</h2>
           <div className="muted-line">{t('pageType', { page: page.pageNumber, type: t(page.type) })}</div>
-          <label>{t('pageTitle')}<input value={page.title || ''} onChange={(event) => updatePage(page.id, { title: event.target.value })} /></label>
+          {page.type === 'cover' ? (
+            <label>{t('coverTitle')}<input value={meta.title} onChange={(event) => setMeta({ title: event.target.value })} /></label>
+          ) : page.type === 'ending' ? (
+            <label>{t('endingPageTitle')}<input value={page.title || ''} onChange={(event) => updatePage(page.id, { title: event.target.value })} /></label>
+          ) : (
+            <label>{t('pageTitle')}<input value={page.title || ''} onChange={(event) => updatePage(page.id, { title: event.target.value })} /></label>
+          )}
           <label>{t('date')}<input type="date" value={page.date || ''} onChange={(event) => updatePage(page.id, { date: event.target.value })} /></label>
           <label>{t('notes')}<textarea value={page.notes || ''} onChange={(event) => updatePage(page.id, { notes: event.target.value })} /></label>
           <button className="secondary-button" onClick={() => updatePage(page.id, { notes: generateNoteText(themeToCopywritingType(selectedThemeId)) })}>{t('generateLocalText')}</button>

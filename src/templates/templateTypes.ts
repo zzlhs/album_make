@@ -20,12 +20,20 @@ export type UserPhoto = {
 export type PhotoFrameState = {
   photoId: string;
   frameId: string;
+
+  // 图片内容状态（不再开放给用户手动调整，保留以兼容旧数据）
   scale: number;
   offsetX: number;
   offsetY: number;
-  rotation?: number;
   objectPositionX: number;
   objectPositionY: number;
+
+  // 相框状态（用户可编辑的覆盖值）
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+  rotation?: number;
 };
 
 export type TextAreaType = 'title' | 'subtitle' | 'date' | 'notes' | 'author' | 'pageNumber' | 'toc';
